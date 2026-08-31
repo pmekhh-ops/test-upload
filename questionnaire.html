@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>企業體質初步檢測｜線上問卷原型</title>
+<style>
+  :root{
+    --navy:#1F3864;
+    --navy-light:#2E4C7E;
+    --gold:#C9A227;
+    --gold-light:#E8D48A;
+    --bg:#F7F5F0;
+    --card:#FFFFFF;
+    --text:#2B2B2B;
+    --muted:#6B6B6B;
+    --border:#E4E0D6;
+    --red:#C0473A;
+    --yellow:#C9922B;
+    --green:#3E7A4E;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    line-height:1.7;
+  }
+  .app{
+    max-width:760px;
+    margin:0 auto;
+    padding:24px 18px 80px;
+    min-height:100vh;
+  }
+  .topbar{
+    position:sticky; top:0; z-index:10;
+    background:var(--bg);
+    padding:10px 0 16px;
+  }
+  .brand{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .brand-name{font-weight:700; color:var(--navy); font-size:15px; letter-spacing:1px;}
+  .brand-tag{font-size:12px; color:var(--muted);}
+  .progress-track{
+    width:100%; height:8px; background:var(--border); border-radius:999px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; background:linear-gradient(90deg,var(--gold),var(--navy));
+    border-radius:999px; transition:width .35s ease;
+  }
+  .progress-label{
+    margin-top:8px; font-size:12.5px; color:var(--muted); display:flex; justify-content:space-between;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:32px 28px;
+    box-shadow:0 2px 10px rgba(31,56,100,0.05);
+    margin-top:14px;
+  }
+  h1.hero{
+    font-size:26px; color:var(--navy); line-height:1.5; margin:0 0 14px;
+  }
+  .lede{font-size:15.5px; color:var(--text); margin-bottom:14px;}
+  .muted{color:var(--muted); font-size:14px;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:18px 0;}
+  .pill{
+    font-size:12.5px; background:#F1ECDD; color:var(--navy);
+    border:1px solid var(--gold-light); border-radius:999px; padding:5px 12px;
+  }
+  .cta{
+    display:inline-block; margin-top:18px; background:var(--navy); color:#fff;
+    border:none; padding:14px 30px; border-radius:999px; font-size:16px; font-weight:700;
+    cursor:pointer; transition:background .2s ease;
+  }
+  .cta:hover{background:var(--navy-light);}
+  .cta:disabled{background:#B9B9B9; cursor:not-allowed;}
+  .cta.secondary{
+    background:transparent; color:var(--navy); border:1.5px solid var(--navy); font-weight:600;
+  }
+  .cta.secondary:hover{background:#F1ECDD;}
+  .module-head{margin-bottom:20px;}
+  .module-code{
+    display:inline-block; font-size:12.5px; font-weight:700; color:#fff;
+    background:var(--navy); padding:3px 10px; border-radius:6px; letter-spacing:1px; margin-bottom:10px;
+  }
+  .module-title{font-size:21px; color:var(--navy); font-weight:700; margin:0 0 6px;}
+  .module-blurb{font-size:14.5px; color:var(--muted);}
+  .q-block{margin-bottom:28px;}
+  .q-text{font-size:16px; font-weight:700; color:var(--text); margin-bottom:12px;}
+  .q-code{color:var(--gold); font-weight:800; margin-right:6px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .option{
+    display:flex; align-items:flex-start; gap:12px;
+    border:1.5px solid var(--border); border-radius:12px; padding:13px 16px;
+    cursor:pointer; transition:all .15s ease; background:#FFFEFC;
+  }
+  .option:hover{border-color:var(--gold-light); background:#FBF8EF;}
+  .option.selected{
+    border-color:var(--navy); background:#EEF2F8;
+  }
+  .option .badge{
+    flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:700; color:var(--muted); background:#fff;
+  }
+  .option.selected .badge{ background:var(--navy); border-color:var(--navy); color:#fff; }
+  .option .otext{font-size:14.5px; color:var(--text); padding-top:2px;}
+  .market-divider{
+    margin:26px 0 20px; padding-top:20px; border-top:1px dashed var(--border);
+    font-size:13.5px; color:var(--navy); font-weight:700;
+  }
+  .section-divider{
+    margin:26px 0 20px; padding-top:20px; border-top:1px dashed var(--border);
+    font-size:16px; color:var(--navy); font-weight:700;
+  }
+  .field{margin-bottom:20px;}
+  .field label{display:block; font-size:14.5px; font-weight:700; margin-bottom:8px;}
+  .field .req{color:var(--red); font-weight:700;}
+  .field select, .field input[type=text], .field input[type=email], .field input[type=tel]{
+    width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-size:14.5px; font-family:inherit; background:#fff; color:var(--text);
+  }
+  .field select:focus, .field input:focus{outline:none; border-color:var(--navy);}
+  .current-need-detail{
+    width:100%; padding:12px 14px; border:1.5px solid var(--border); border-radius:10px;
+    font-size:14.5px; font-family:inherit; background:#fff; color:var(--text); resize:vertical;
+  }
+  .current-need-detail:focus{outline:none; border-color:var(--navy);}
+  .nav-row{display:flex; justify-content:space-between; align-items:center; margin-top:26px; gap:12px;}
+  .hint{font-size:12.5px; color:var(--muted); margin-top:10px;}
+  .thankyou-icon{font-size:44px; margin-bottom:10px;}
+  .toggle-link{
+    display:inline-block; margin-top:26px; font-size:13.5px; color:var(--navy);
+    text-decoration:underline; cursor:pointer; background:none; border:none; padding:0;
+  }
+  .internal-panel{
+    margin-top:18px; border:1.5px dashed var(--gold-light); border-radius:12px;
+    padding:18px; background:#FFFBF0;
+  }
+  .internal-panel h3{margin:0 0 6px; font-size:15px; color:var(--navy);}
+  .internal-panel .warn{font-size:12.5px; color:var(--muted); margin-bottom:14px;}
+  pre{
+    background:#1F2430; color:#DCE6F0; padding:16px; border-radius:10px;
+    font-size:12px; overflow-x:auto; max-height:340px; white-space:pre-wrap; word-break:break-word;
+  }
+  .copy-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+  .copy-btn{
+    font-size:13px; padding:8px 16px; border-radius:999px; border:1.5px solid var(--navy);
+    background:#fff; color:var(--navy); cursor:pointer; font-weight:600;
+  }
+  .copy-btn:hover{background:#EEF2F8;}
+  .copied{color:var(--green); font-size:12.5px; margin-left:8px;}
+  .summary-text{white-space:pre-wrap; font-size:13px; background:#fff; border:1px solid var(--border); border-radius:10px; padding:14px; max-height:340px; overflow-y:auto;}
+  .error-msg{color:var(--red); font-size:13px; margin-top:10px; display:none;}
+  @media (max-width:520px){
+    .card{padding:24px 18px;}
+    h1.hero{font-size:22px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-name">企業體質初步檢測</div>
+      <div class="brand-tag" id="stepLabel">開始之前</div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+  <div id="stepContainer"></div>
+</div>
+
+<script>
+/* =========================================================
+   1. 資料定義：基本資料欄位 + 8大模組題庫（文字均取自問卷原文，不得更動語意）
+   ========================================================= */
+
+const BASIC_FIELDS = [
+  { code:'P1', label:'您在公司的角色', type:'select', required:true,
+    options:['創辦人／負責人','二代接班人／家族成員','專業經理人（總經理／CEO）','部門主管','其他'] },
+  { code:'P2', label:'公司產業', type:'select', required:true,
+    options:['製造業','批發貿易','零售／餐飲','營建／工程','服務業','科技／資訊','其他（請於下方說明）'] },
+  { code:'P2_other', label:'若上題選「其他」，請簡述產業', type:'text', required:false, dependsOn:'P2', dependsValue:'其他（請於下方說明）' },
+  { code:'P3', label:'員工人數', type:'select', required:true,
+    options:['10人以下','11–30人','31–100人','101–300人','300人以上'] },
+  { code:'P4', label:'公司年營收（可略過）', type:'select', required:false,
+    options:['暫不透露','3千萬以下','3千萬–1億','1–3億','3–10億','10億以上'] },
+  { code:'P5', label:'公司成立年數', type:'select', required:true,
+    options:['5年以下','5–10年','11–20年','21–30年','30年以上'] },
+  { code:'P6_name', label:'您的姓名', type:'text', required:true },
+  { code:'P6_company', label:'公司名稱', type:'text', required:true },
+  { code:'P6_email', label:'Email（用於寄送完整檢測報告）', type:'email', required:true },
+  { code:'P6_phone', label:'手機／LINE（選填）', type:'tel', required:false },
+];
+
+const MODULES = [
+  {
+    code:'M1', title:'組織與授權',
+    blurb:'這個部分想了解：公司裡的大小決定，平常是怎麼發生的。',
+    questions:[
+      { code:'Q1', text:'公司裡的大小決定，實際上是怎麼發生的？', options:[
+        ['A','例行決策主管自己做，只有重大事項才到我這裡'],
+        ['B','主管會先提方案，但多數還是要我點頭才動'],
+        ['C','大小事幾乎都要我拍板，主管習慣先來問我'],
+        ['D','不只要我拍板，很多事還要我主動盯著才會動'] ] },
+      { code:'Q2', text:'如果您一週不進公司、不看手機，公司會怎樣？', options:[
+        ['A','正常運轉，回來看重點報告就好'],
+        ['B','日常沒問題，但會累積一堆等我決定的事'],
+        ['C','會出一些狀況，需要我遠端救火'],
+        ['D','不敢想像，我從來沒有離開超過兩三天'] ] },
+      { code:'Q3', text:'要推動一件跨部門的事情，通常是怎麼進行的？', options:[
+        ['A','有負責主管牽頭，部門之間自己協調'],
+        ['B','主管能推，但卡住時要我出面協調'],
+        ['C','部門各自為政，跨部門的事幾乎都要我居中'],
+        ['D','沒有人推得動跨部門的事，都是我直接指揮各部門'] ] },
+      { code:'Q4', text:'關於「授權」，下列哪一個最接近貴公司的現況？', options:[
+        ['A','主管能獨立決策並對結果負責，我只看重點與例外'],
+        ['B','主管能處理日常事務，但重大決策仍會回到我身上'],
+        ['C','主管主要是傳達與執行，決策幾乎都在我'],
+        ['D','沒有真正的主管層，事情大多由我直接指揮'] ] },
+    ]
+  },
+  {
+    code:'M2', title:'流程與制度',
+    blurb:'這個部分想了解：工作交接與做事方法，靠的是文件，還是靠默契。',
+    questions:[
+      { code:'Q5', text:'同一件工作，交給不同的人做，結果會怎樣？', options:[
+        ['A','有標準做法，不同人做結果大致一樣'],
+        ['B','大方向一致，細節因人而異'],
+        ['C','每個人有自己的做法，品質看人'],
+        ['D','落差很大，常常要重做或善後'] ] },
+      { code:'Q6', text:'某位關鍵同仁臨時請假一週，他手上的工作會怎樣？', options:[
+        ['A','有人能照著文件接手，運作不受影響'],
+        ['B','有人能暫代，但效率明顯下降'],
+        ['C','部分工作會停擺，等他回來處理'],
+        ['D','幾乎沒人接得住，只能打電話問他'] ] },
+      { code:'Q7', text:'出了問題（客訴、做錯、延誤）時，通常怎麼收場？', options:[
+        ['A','能很快釐清環節與責任，並修正流程避免再犯'],
+        ['B','找得出原因，但常常不了了之，過陣子又發生'],
+        ['C','部門互相推責，最後要老闆出面處理'],
+        ['D','說不清楚哪裡出錯，只能加派人手盯'] ] },
+      { code:'Q8', text:'公司的關鍵工作流程，下列哪一個最接近現況？', options:[
+        ['A','有文件化的流程，大家照著做，而且會定期更新'],
+        ['B','有部分SOP，但常常沒人照著做'],
+        ['C','流程在大家腦中，靠默契和經驗運作'],
+        ['D','說不清楚流程，事情來了見招拆招'] ] },
+    ]
+  },
+  {
+    code:'M3', title:'數位化與系統',
+    blurb:'這個部分想了解：公司的資料與系統，平常是怎麼被使用的。',
+    questions:[
+      { code:'Q9', text:'要找一份三個月前的報價單（或合約、圖面），通常怎麼找？', options:[
+        ['A','系統或雲端有規則地放，幾分鐘內找得到'],
+        ['B','大概知道在哪，但要花些時間翻'],
+        ['C','要問特定的人才知道放在哪'],
+        ['D','常常找不到，只好重做一份'] ] },
+      { code:'Q10', text:'公司買過的系統或軟體，現在的使用狀況是？', options:[
+        ['A','核心系統大家每天在用，資料是準的'],
+        ['B','有在用，但只用部分功能，很多還是靠Excel補'],
+        ['C','系統形同虛設，大家用自己的方式做事'],
+        ['D','沒有導入過什麼系統'] ] },
+      { code:'Q11', text:'同一筆資料（訂單、工時、費用），在公司裡要被輸入幾次？', options:[
+        ['A','原則上一次輸入，系統自動流轉'],
+        ['B','兩三個地方要重複登打，但有規則可循'],
+        ['C','很多資料靠人工轉貼來轉貼去，常出錯或延遲'],
+        ['D','不清楚，反正每個部門都自己再打一份'] ] },
+      { code:'Q12', text:'公司的日常運作，下列哪一個最接近現況？', options:[
+        ['A','核心流程都在系統上跑，資料即時、可查詢'],
+        ['B','有系統但只涵蓋部分流程，其他還是靠Excel和LINE'],
+        ['C','主要靠Excel、LINE和紙本在管理'],
+        ['D','幾乎都是紙本和口頭交辦'] ] },
+    ]
+  },
+  {
+    code:'M4', title:'知識傳承與接班',
+    blurb:'這個部分想了解：公司最關鍵的經驗與客戶關係，目前放在誰身上。',
+    questions:[
+      { code:'Q13', text:'公司最關鍵的技術、經驗和客戶關係，目前放在哪裡？', options:[
+        ['A','大多已文件化，或有多人共同掌握'],
+        ['B','部分整理過，但核心還是在幾個人腦中'],
+        ['C','幾乎都在少數幾個人（包括我）身上'],
+        ['D','說實話，大多只在我一個人身上'] ] },
+      { code:'Q14', text:'新人進來，通常是怎麼學會工作的？', options:[
+        ['A','有教材、SOP和帶教流程，多數崗位三個月內能上手'],
+        ['B','有簡單資料，但主要還是靠前輩帶'],
+        ['C','全靠跟在資深員工旁邊看著學，學多久看造化'],
+        ['D','沒人有空教，留得下來的都是自己摸出來的'] ] },
+      { code:'Q15', text:'如果某位資深員工明天提離職，最真實的情況會是？', options:[
+        ['A','有交接機制，影響可控'],
+        ['B','會痛一陣子，但撐得過去'],
+        ['C','有些工作會直接斷掉，要花很久才補得回來'],
+        ['D','不敢想，我會用盡辦法留住他'] ] },
+      { code:'Q16', text:'關於「接班與傳承」，下列哪一個最接近現況？', options:[
+        ['A','有明確的接班人與傳承計畫，而且正在執行'],
+        ['B','有想法、有人選，但還沒有實際開始做'],
+        ['C','知道很重要，但不知道從何做起'],
+        ['D','還沒有認真想過這件事'] ] },
+    ]
+  },
+  {
+    code:'M5', title:'人力與人才',
+    blurb:'這個部分想了解：招募、留才與主管帶人，目前的實際狀況。',
+    questions:[
+      { code:'Q17', text:'公司目前找人、留人的狀況是？', options:[
+        ['A','找得到人、留得住人，有穩定的人才梯隊'],
+        ['B','找人不容易，但進來的大多留得住'],
+        ['C','一直缺人，新人也待不久'],
+        ['D','長期缺工，靠老員工硬撐'] ] },
+      { code:'Q18', text:'您的主管們是怎麼帶人的？', options:[
+        ['A','有共同的帶人方法，會培養部屬'],
+        ['B','各有各的帶法，效果看個人'],
+        ['C','很會做事，但不太會帶人，部屬成長慢'],
+        ['D','主管覺得自己做比較快，根本沒在帶人'] ] },
+      { code:'Q19', text:'員工平常的工作狀態，比較接近哪一種？', options:[
+        ['A','會主動發現問題、提出改善'],
+        ['B','交辦的事會做好，偶爾有人提建議'],
+        ['C','等指令做事，多一事不如少一事'],
+        ['D','連交辦的事都要一直盯才會動'] ] },
+      { code:'Q20', text:'公司的人才運作，下列哪一個最接近現況？', options:[
+        ['A','招募、培訓、晉升有制度，而且運作正常'],
+        ['B','有基本制度，但效果有限'],
+        ['C','主要靠老闆和主管的個人判斷在處理'],
+        ['D','有人來就用，走了再找'] ] },
+    ]
+  },
+  {
+    code:'M6', title:'成本與財務控管',
+    blurb:'這個部分想了解：成本、報價與利潤，您目前掌握得有多清楚。',
+    questions:[
+      { code:'Q21', text:'每個案子（或產品）到底賺多少，您什麼時候會知道？', options:[
+        ['A','進行中就看得到即時成本與毛利'],
+        ['B','結案後結算，能算得清楚'],
+        ['C','結案後也只有大概的感覺'],
+        ['D','沒有分案算過，只看公司整體有沒有賺'] ] },
+      { code:'Q22', text:'公司報價主要靠什麼？', options:[
+        ['A','有成本數據和報價模型'],
+        ['B','有歷史成本參考，加上經驗判斷'],
+        ['C','主要靠經驗和行情感覺'],
+        ['D','跟著同業出價，或客戶說多少就做多少'] ] },
+      { code:'Q23', text:'「錢有進來，但不知道利潤被什麼吃掉」——貴公司的情況是？', options:[
+        ['A','不會，成本結構清楚，有異常看得出來'],
+        ['B','大方向清楚，但細節要花時間查'],
+        ['C','常有這種感覺，說不清楚漏在哪裡'],
+        ['D','完全就是這樣，忙了一年不知道賺到什麼'] ] },
+      { code:'Q24', text:'公司的財務與成本資訊，下列哪一個最接近現況？', options:[
+        ['A','有即時的成本與毛利數據，決策看報表'],
+        ['B','有月結報表，但看到的時候常常已經過時'],
+        ['C','只有會計帳，對管理決策的參考價值低'],
+        ['D','主要看銀行帳戶餘額，感覺公司好不好'] ] },
+    ]
+  },
+  {
+    code:'M7', title:'品牌行銷與獲客',
+    blurb:'這個部分想了解：客戶為什麼選你們，以及新客通常怎麼來。',
+    questions:[
+      { code:'Q25', text:'如果問您的客戶「為什麼選你們」，答案會是？', options:[
+        ['A','說得出明確理由（技術、品質、服務），而且公司上下講法一致'],
+        ['B','有理由，但主要是我自己知道，團隊說不出來'],
+        ['C','大概是配合久了、有信任吧'],
+        ['D','沒有認真想過這個問題'] ] },
+      { code:'Q26', text:'公司的行銷（網站、社群、影片、展會）目前是？', options:[
+        ['A','固定產出內容，而且能帶來詢問和訂單'],
+        ['B','有在做，但成效不穩定'],
+        ['C','偶爾做一下，沒什麼效果'],
+        ['D','幾乎沒做，也不知道從何做起'] ] },
+      { code:'Q27', text:'如果明天要開發一個新客群或新市場，公司會怎麼做？', options:[
+        ['A','有方法、有分工，做過而且成功過'],
+        ['B','老闆帶頭衝，公司配合'],
+        ['C','只能靠老闆的人脈試試看'],
+        ['D','不知道從哪裡開始'] ] },
+      { code:'Q28', text:'公司的新客戶來源，下列哪一個最接近現況？', options:[
+        ['A','有穩定的新客開發管道，數量大致可預估'],
+        ['B','有在做行銷，但成效不穩定'],
+        ['C','偶爾做行銷，主要還是靠介紹'],
+        ['D','完全靠老關係和回頭客'] ] },
+    ],
+    market:{
+      label:'關於您所在的市場環境',
+      questions:[
+        { code:'Q29', text:'您所在市場的競爭狀況，比較接近哪一種？', options:[
+          ['A','我們有明顯的差異化，很少需要跟人拼價格'],
+          ['B','有競爭，但靠品質或服務還能守住合理毛利'],
+          ['C','殺價競爭明顯，毛利逐年被壓縮'],
+          ['D','幾乎每一單都在拼價格，毛利薄到接單只是為了養人'] ] },
+        { code:'Q30', text:'您所在市場的整體需求趨勢是？', options:[
+          ['A','需求在成長，機會比我們接得住的還多'],
+          ['B','需求穩定，成長有限但不至於萎縮'],
+          ['C','需求明顯下滑，或正在被新技術、新模式取代'],
+          ['D','市場快速萎縮，同業陸續退場或轉行'] ] },
+      ]
+    }
+  },
+  {
+    code:'M8', title:'轉型準備度',
+    blurb:'這個部分想了解：您和公司，現在準備好投入改變了嗎。',
+    questions:[
+      { code:'Q31', text:'如果公司啟動轉型，您本人能投入的程度是？', options:[
+        ['A','每週固定保留時間親自參與，把它列為優先事項'],
+        ['B','願意參與重要節點，日常推動交給內部窗口'],
+        ['C','實在太忙，希望團隊處理、我聽結果就好'],
+        ['D','我就是因為沒時間，才希望有人能全部包掉'] ] },
+      { code:'Q32', text:'公司內部有沒有人可以擔任改革窗口，推動跨部門的事情？', options:[
+        ['A','有明確人選（例如二代、特助或主管），有意願也有能力'],
+        ['B','有幾個可能人選，但還要培養或確認意願'],
+        ['C','想不到適合的人'],
+        ['D','大家都忙於日常，沒有人能兼這件事'] ] },
+      { code:'Q33', text:'對於制度、流程與傳承這種「短期看不到獲利」的投資，您的態度是？', options:[
+        ['A','只要方向對、有驗收標準，願意編列預算'],
+        ['B','願意投入，但想先從小規模試起'],
+        ['C','要先看到別人的成功案例才會考慮'],
+        ['D','現階段只想投在馬上能賺錢的事情上'] ] },
+      { code:'Q34', text:'對於公司的轉型，下列哪一個最接近您現在的狀態？', options:[
+        ['A','已經在做了，只是卡住、不確定方法對不對'],
+        ['B','下定決心要做，正在找方法和夥伴'],
+        ['C','知道該做，但還在觀望時機和成本'],
+        ['D','還在懷疑有沒有必要'] ] },
+    ]
+  },
+];
+
+/* =========================================================
+   1A. 不計分的「當前需求」題（顯示於M8頁面末端，送出問卷按鈕之前；
+       不屬於任何模組、不計分、不進入 answers／QUESTION_INDEX／計分邏輯）
+   ========================================================= */
+const CURRENT_NEED_OPTIONS = [
+  '企業資料、文件與知識難以查找',
+  'SOP、經驗傳承或新人培訓',
+  'LINE、Excel、紙本之間重複作業',
+  '文件識別、資料輸入、資格或期限管理',
+  '客戶服務、內部問答或AI助手',
+  '經營報表與資料分析',
+  '傳統軟體或系統開發',
+  '產線AI、視覺檢測、設備或自動化',
+  '目前還不確定，希望先透過診斷找出方向',
+  '其他，請說明',
+];
+
+/* =========================================================
+   1B. Dify 串接設定
+   ---------------------------------------------------------
+   Dify workflow建好、發布後，到該App的「發布 → 存取API」頁面複製以下兩個值，
+   貼到下面兩個常數即可啟用自動送出。兩者留空時，網頁會自動略過這一步，
+   只保留感謝頁「內部備用視圖」的手動複製功能（不影響問卷本身的填寫）。
+
+   Dify那邊的 Start 節點請建立以下5個輸入變數（型別建議）：
+     - contact_name     （簡短文字）
+     - contact_company  （簡短文字）
+     - contact_email    （簡短文字）
+     - contact_phone    （簡短文字，可留空）
+     - questionnaire_json（段落文字／長文字——完整答卷JSON會以字串形式放在這裡，
+                           工作流程裡可以用「程式碼」節點 JSON.parse() 還原，
+                           或直接把這段文字丟給LLM節點分析）
+   ========================================================= */
+const DIFY_API_BASE = '';  // 例如 Dify Cloud 填 'https://api.dify.ai/v1'；自架版填 'https://dify.你的網域.com/v1'
+const DIFY_API_KEY  = '';  // 例如 'app-xxxxxxxxxxxxxxxxxxxx'（該Workflow App專屬的API金鑰，不是Workspace金鑰）
+const DIFY_ENABLED  = !!(DIFY_API_BASE && DIFY_API_KEY);
+
+async function submitToDify(payload){
+  if(!DIFY_ENABLED) return { skipped:true };
+  try{
+    const res = await fetch(DIFY_API_BASE.replace(/\/$/,'') + '/workflows/run', {
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer ' + DIFY_API_KEY,
+        'Content-Type':'application/json',
+      },
+      body: JSON.stringify({
+        inputs:{
+          contact_name: payload.basicInfo.P6_name || '',
+          contact_company: payload.basicInfo.P6_company || '',
+          contact_email: payload.basicInfo.P6_email || '',
+          contact_phone: payload.basicInfo.P6_phone || '',
+          questionnaire_json: JSON.stringify(payload),
+        },
+        response_mode:'blocking',
+        user: payload.basicInfo.P6_email || 'anonymous',
+      }),
+    });
+    if(!res.ok){
+      const bodyText = await res.text().catch(()=> '');
+      throw new Error('HTTP ' + res.status + (bodyText ? '：' + bodyText.slice(0,200) : ''));
+    }
+    const data = await res.json();
+    return { ok:true, data };
+  } catch(err){
+    return { ok:false, error: err.message };
+  }
+}
+
+/* =========================================================
+   2. 狀態管理
+   ========================================================= */
+const state = {
+  step: 0,           // 0=intro, 1=basic, 2..9=M1..M8, 10=thankyou
+  answers: {},        // { Q1:'C', ... }
+  basic: {},           // { P1:'...', P6_email:'...', ... }
+  submittedAt: null,
+  difyResult: null,    // { skipped:true } | { ok:true, data } | { ok:false, error }
+  currentNeed: { primaryCategory:'', detail:'' }, // 不計分的「當前需求」題，獨立於 answers 之外
+};
+
+const TOTAL_STEPS = 2 + MODULES.length; // intro + basic + 8 modules (thankyou 不計入進度)
+
+function el(tag, cls, html){
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+/* =========================================================
+   3. 各步驟渲染
+   ========================================================= */
+function renderIntro(container){
+  const card = el('div','card');
+  card.appendChild(el('h1','hero','您的公司，是靠「組織」在運作，還是靠「您」在撐？'));
+  card.appendChild(el('p','lede','用 10 分鐘，從 8 個面向快速檢測您公司的經營體質：組織授權、流程制度、數位化、知識傳承、人力人才、成本控管、品牌獲客與市場處境、轉型準備度。'));
+  card.appendChild(el('p','lede','每一題都是中小企業的真實場景，您只需要選出「最接近貴公司現況」的那一個。完成後我們會請顧問團隊核實您的填答，並將完整的「企業體質初步檢測報告」寄送給您。'));
+  const pills = el('div','pill-row');
+  ['組織授權','流程制度','數位化','知識傳承','人力人才','成本控管','品牌獲客','轉型準備度'].forEach(t=>{
+    pills.appendChild(el('span','pill',t));
+  });
+  card.appendChild(pills);
+  card.appendChild(el('p','muted','請依「公司實際的樣子」作答，而不是「希望的樣子」——檢測結果只有您與我們的顧問團隊會看到，越誠實，越有參考價值。'));
+  const btn = el('button','cta','開始檢測');
+  btn.onclick = ()=>{ state.step = 1; render(); };
+  card.appendChild(btn);
+  container.appendChild(card);
+}
+
+function renderBasic(container){
+  const card = el('div','card');
+  card.appendChild(el('div','module-code','PART 0'));
+  card.appendChild(el('div','module-title','基本資料'));
+  card.appendChild(el('div','module-blurb','用於個人化您的報告內容，以及後續寄送完整版報告，不會用於其他用途。'));
+  const wrap = el('div');
+  wrap.style.marginTop = '22px';
+
+  BASIC_FIELDS.forEach(f=>{
+    if(f.dependsOn && state.basic[f.dependsOn] !== f.dependsValue) return;
+    const fieldEl = el('div','field');
+    const labelHtml = f.label + (f.required ? ' <span class="req">*</span>' : ' <span class="muted">(選填)</span>');
+    fieldEl.appendChild(el('label',null,labelHtml));
+    if(f.type === 'select'){
+      const sel = document.createElement('select');
+      sel.appendChild(el('option',null,'請選擇...')).value = '';
+      f.options.forEach(o=>{
+        const opt = el('option',null,o); opt.value = o;
+        if(state.basic[f.code] === o) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      sel.onchange = ()=>{ state.basic[f.code] = sel.value; if(f.code==='P2') render(); };
+      fieldEl.appendChild(sel);
+    } else {
+      const input = document.createElement('input');
+      input.type = f.type;
+      input.value = state.basic[f.code] || '';
+      input.placeholder = f.type === 'email' ? 'name@example.com' : '';
+      input.oninput = ()=>{ state.basic[f.code] = input.value; };
+      fieldEl.appendChild(input);
+    }
+    wrap.appendChild(fieldEl);
+  });
+  card.appendChild(wrap);
+
+  const errorMsg = el('div','error-msg','請完整填寫所有必填欄位（含Email）後再繼續。');
+  card.appendChild(errorMsg);
+
+  const nav = el('div','nav-row');
+  const back = el('button','cta secondary','上一步');
+  back.onclick = ()=>{ state.step = 0; render(); };
+  const next = el('button','cta','下一步');
+  next.onclick = ()=>{
+    const missing = BASIC_FIELDS.some(f=>{
+      if(!f.required) return false;
+      if(f.dependsOn && state.basic[f.dependsOn] !== f.dependsValue) return false;
+      return !state.basic[f.code];
+    });
+    if(missing){ errorMsg.style.display = 'block'; return; }
+    errorMsg.style.display = 'none';
+    state.step = 2; render();
+  };
+  nav.appendChild(back); nav.appendChild(next);
+  card.appendChild(nav);
+  container.appendChild(card);
+}
+
+function renderModule(container, moduleIndex){
+  const mod = MODULES[moduleIndex];
+  const card = el('div','card');
+  const head = el('div','module-head');
+  head.appendChild(el('div','module-code', mod.code + ' ／ 8'));
+  head.appendChild(el('div','module-title', mod.title));
+  head.appendChild(el('div','module-blurb', mod.blurb));
+  card.appendChild(head);
+
+  function renderQ(q){
+    const qb = el('div','q-block');
+    const qt = el('div','q-text');
+    qt.innerHTML = '<span class="q-code">'+q.code+'</span>' + q.text;
+    qb.appendChild(qt);
+    const opts = el('div','options');
+    q.options.forEach(([key,text])=>{
+      const o = el('div','option'+(state.answers[q.code]===key?' selected':''));
+      o.appendChild(el('div','badge',key));
+      o.appendChild(el('div','otext',text));
+      o.onclick = ()=>{ state.answers[q.code] = key; renderModule(container, moduleIndex); };
+      opts.appendChild(o);
+    });
+    qb.appendChild(opts);
+    return qb;
+  }
+
+  mod.questions.forEach(q=> card.appendChild(renderQ(q)));
+
+  if(mod.market){
+    card.appendChild(el('div','market-divider', mod.market.label));
+    mod.market.questions.forEach(q=> card.appendChild(renderQ(q)));
+  }
+
+  // 不計分的「當前需求」題——只出現在最後一個模組（M8）末端，送出問卷按鈕之前。
+  // 獨立於 state.answers／QUESTION_INDEX／MODULES 之外，不參與任何計分或燈號判斷，也不佔用步驟／進度條。
+  // 主選項（primaryCategory）為必填，補充說明（detail）維持選填。
+  let cnErrorMsg = null;
+  if(moduleIndex === MODULES.length - 1){
+    const cnBlock = el('div','q-block');
+    cnBlock.appendChild(el('div','section-divider','完成這份檢測後，您目前最希望優先解決的具體問題是什麼？ <span class="req">*</span>'));
+    const cnOpts = el('div','options');
+    CURRENT_NEED_OPTIONS.forEach(optText=>{
+      const o = el('div','option'+(state.currentNeed.primaryCategory===optText?' selected':''));
+      o.appendChild(el('div','otext',optText));
+      o.onclick = ()=>{ state.currentNeed.primaryCategory = optText; renderModule(container, moduleIndex); };
+      cnOpts.appendChild(o);
+    });
+    cnBlock.appendChild(cnOpts);
+
+    cnErrorMsg = el('div','error-msg','請選擇一項最希望優先解決的問題後再送出。');
+    cnBlock.appendChild(cnErrorMsg);
+
+    const detailField = el('div','field');
+    detailField.style.marginTop = '16px';
+    detailField.appendChild(el('label',null,'如果方便，請用一至兩句話說明最希望改善的具體情境。 <span class="muted">(選填)</span>'));
+    const textarea = document.createElement('textarea');
+    textarea.className = 'current-need-detail';
+    textarea.rows = 3;
+    textarea.value = state.currentNeed.detail || '';
+    textarea.oninput = ()=>{ state.currentNeed.detail = textarea.value; };
+    detailField.appendChild(textarea);
+    cnBlock.appendChild(detailField);
+
+    card.appendChild(cnBlock);
+  }
+
+  const errorMsg = el('div','error-msg','請完成本頁所有題目後再繼續。');
+  card.appendChild(errorMsg);
+
+  const allQs = mod.questions.concat(mod.market ? mod.market.questions : []);
+  const nav = el('div','nav-row');
+  const back = el('button','cta secondary','上一步');
+  back.onclick = ()=>{ state.step -= 1; render(); };
+  const isLast = (moduleIndex === MODULES.length - 1);
+  const next = el('button','cta', isLast ? '送出問卷' : '下一步');
+  next.onclick = async ()=>{
+    const missing = allQs.some(q=> !state.answers[q.code]);
+    if(missing){ errorMsg.style.display = 'block'; return; }
+    errorMsg.style.display = 'none';
+    if(isLast && !state.currentNeed.primaryCategory){
+      if(cnErrorMsg) cnErrorMsg.style.display = 'block';
+      return;
+    }
+    if(cnErrorMsg) cnErrorMsg.style.display = 'none';
+    if(isLast){
+      state.submittedAt = new Date();
+      next.disabled = true;
+      next.textContent = DIFY_ENABLED ? '送出中…' : '送出問卷';
+      const payload = buildPayload();
+      state.difyResult = await submitToDify(payload);
+      state.step = 2 + MODULES.length;
+      render();
+    } else {
+      state.step += 1;
+      render();
+    }
+  };
+  nav.appendChild(back); nav.appendChild(next);
+  card.appendChild(nav);
+  container.replaceChildren();
+  container.appendChild(card);
+}
+
+/* =========================================================
+   4. 計分邏輯（依問卷附件規則：A=100/B=66/C=33/D=0，模組平均四捨五入；
+      M7不含市場處境題；M1–M7平均為總體體質分數；M8獨立呈現）
+   ========================================================= */
+// 題號 → 題目文字／選項全文的查找表（從 MODULES 定義一次性建立，供匯出時把字母還原成完整文字）
+const QUESTION_INDEX = {};
+MODULES.forEach(mod=>{
+  const allQs = mod.questions.concat(mod.market ? mod.market.questions : []);
+  allQs.forEach(q=>{
+    const optionMap = {};
+    q.options.forEach(([k,t])=>{ optionMap[k] = t; });
+    QUESTION_INDEX[q.code] = {
+      module: mod.code,
+      moduleTitle: mod.title,
+      isMarketQuestion: !!(mod.market && mod.market.questions.includes(q)),
+      questionText: q.text,
+      options: optionMap,
+    };
+  });
+});
+
+function letterScore(l){ return {A:100,B:66,C:33,D:0}[l]; }
+function roundHalfUp(n){ return Math.floor(n + 0.5); }
+function lightOf(score){ return score>=70 ? '綠燈' : (score>=40 ? '黃燈' : '紅燈'); }
+
+function computeResults(){
+  const moduleScores = {};
+  const moduleLights = {};
+  MODULES.forEach(mod=>{
+    const vals = mod.questions.map(q => letterScore(state.answers[q.code]));
+    const avg = vals.reduce((a,b)=>a+b,0) / vals.length;
+    const score = roundHalfUp(avg);
+    moduleScores[mod.code] = score;
+    moduleLights[mod.code] = mod.code === 'M8' ? (score>=70?'高':(score>=40?'中':'低')) : lightOf(score);
+  });
+  const overallAvg = ['M1','M2','M3','M4','M5','M6','M7'].reduce((s,c)=>s+moduleScores[c],0) / 7;
+  const overallScore = roundHalfUp(overallAvg);
+  const overallLight = lightOf(overallScore);
+
+  const q29 = state.answers['Q29'], q30 = state.answers['Q30'];
+  let marketType = '成長搶市型';
+  if(q30 === 'C' || q30 === 'D') marketType = '轉軌型';
+  else if(q29 === 'C' || q29 === 'D') marketType = '效率求生型（紅海）';
+
+  const redCount = ['M1','M2','M3','M4','M5','M6','M7'].filter(c => moduleLights[c] === '紅燈').length;
+  const m8 = moduleScores['M8'];
+  let tier = 'C級（冷）';
+  if(m8 >= 70 && redCount >= 2) tier = 'A級（熱）';
+  else if((m8 >= 40 && m8 <= 69) || redCount >= 1) tier = 'B級（溫）';
+  const cautionFlag = (marketType === '轉軌型' && m8 < 40);
+
+  return { moduleScores, moduleLights, overallScore, overallLight, marketType, tier, cautionFlag, redCount };
+}
+
+function buildPayload(){
+  const basicInfo = {};
+  BASIC_FIELDS.forEach(f=>{ basicInfo[f.code] = state.basic[f.code] || ''; });
+
+  // answers 同時帶出：選的字母（selected）＋選項全文（selectedText）＋題目本身（question）
+  // 方便Dify工作流或同事直接讀懂內容，不需要再對照題庫
+  const answers = {};
+  Object.keys(state.answers).forEach(code=>{
+    const letter = state.answers[code];
+    const info = QUESTION_INDEX[code];
+    answers[code] = {
+      module: info.module,
+      moduleTitle: info.moduleTitle,
+      question: info.questionText,
+      selected: letter,
+      selectedText: info.options[letter],
+      isMarketQuestion: info.isMarketQuestion,
+    };
+  });
+
+  return {
+    meta:{
+      source:'KaaS_企業體質初步檢測_網頁問卷',
+      submittedAt: state.submittedAt ? state.submittedAt.toISOString() : null,
+      questionnaireVersion:'企業體質初步檢測_標準版_v1.0',
+    },
+    basicInfo,
+    answers,
+    currentNeed:{
+      primaryCategory: state.currentNeed.primaryCategory || '',
+      detail: state.currentNeed.detail || '',
+    },
+    computed: computeResults(),
+  };
+}
+
+function buildTextSummary(payload){
+  const b = payload.basicInfo;
+  let lines = [];
+  lines.push('【企業體質初步檢測｜填答摘要】');
+  lines.push('提交時間：' + (payload.meta.submittedAt || '—'));
+  lines.push('');
+  lines.push('－ 基本資料 －');
+  lines.push('角色：' + b.P1 + (b.P1==='其他'?'':''));
+  lines.push('產業：' + b.P2 + (b.P2_other ? '（' + b.P2_other + '）' : ''));
+  lines.push('員工人數：' + b.P3);
+  lines.push('年營收：' + (b.P4 || '未提供'));
+  lines.push('成立年數：' + b.P5);
+  lines.push('聯絡人：' + b.P6_name + '／' + b.P6_company + '／' + b.P6_email + (b.P6_phone ? '／' + b.P6_phone : ''));
+  lines.push('');
+  lines.push('－ 各題作答（含題目與選項全文）－');
+  MODULES.forEach(mod=>{
+    lines.push('');
+    lines.push('【' + mod.code + ' ' + mod.title + '】');
+    const codes = mod.questions.map(q=>q.code).concat(mod.market ? mod.market.questions.map(q=>q.code) : []);
+    codes.forEach(c=>{
+      const a = payload.answers[c];
+      lines.push(c + '　' + a.question);
+      lines.push('　→ 選擇 ' + a.selected + '：' + a.selectedText);
+    });
+  });
+  lines.push('');
+  lines.push('－ 當前需求（不計分，獨立於上方各題）－');
+  lines.push('優先解決的問題：' + (payload.currentNeed.primaryCategory || '（未填寫）'));
+  lines.push('補充說明：' + (payload.currentNeed.detail || '（無）'));
+  lines.push('');
+  lines.push('－ 自動計分（僅供參考，正式分析仍以Dify工作流為準）－');
+  const c = payload.computed;
+  ['M1','M2','M3','M4','M5','M6','M7','M8'].forEach(code=>{
+    lines.push(code + '：' + c.moduleScores[code] + '分（' + c.moduleLights[code] + '）');
+  });
+  lines.push('M1–M7總體體質分數：' + c.overallScore + '（' + c.overallLight + '）');
+  lines.push('市場型態：' + c.marketType);
+  lines.push('內部名單等級：' + c.tier + (c.cautionFlag ? '　⚠ 謹慎紅線（轉軌型＋M8<40）' : ''));
+  return lines.join('\n');
+}
+
+function renderThankYou(container){
+  const card = el('div','card');
+  card.appendChild(el('div','thankyou-icon','✅'));
+  card.appendChild(el('h1','hero','感謝您完成企業體質初步檢測'));
+  card.appendChild(el('p','lede','我們已經收到您的填答。顧問團隊會先核實內容，接著將完整的「企業體質初步檢測報告」透過 Email 寄送給您，並視需要與您聯繫，安排一次30分鐘的免費報告解讀。'));
+  card.appendChild(el('p','muted','這是一份初步檢測，還不是全面深度診斷；後續如需要，我們可以再進一步討論貴公司的實際狀況。'));
+
+  // Dify 自動送出狀態提示（僅內部/測試階段可見的技術提示，用色區分成功／失敗／尚未設定）
+  const dr = state.difyResult;
+  if(dr){
+    let statusColor = '#6B6B6B', statusText = '';
+    if(dr.skipped){
+      statusColor = '#8A8A8A';
+      statusText = '⚙ 尚未設定 Dify 連線（API金鑰／網址留空），本次資料僅保留在下方內部備用視圖，請手動複製使用。';
+    } else if(dr.ok){
+      statusColor = 'var(--green)';
+      statusText = '✅ 已自動將本次填答傳送至 Dify 工作流程。';
+    } else {
+      statusColor = 'var(--red)';
+      statusText = '⚠ 自動傳送至 Dify 時發生錯誤（' + dr.error + '）。資料已保留在下方內部備用視圖，可先手動複製處理，並檢查 Dify 的 API 金鑰／網址／變數名稱設定。';
+    }
+    const statusBox = el('p', null, statusText);
+    statusBox.style.cssText = 'font-size:13px;color:'+statusColor+';border:1px dashed '+statusColor+';border-radius:8px;padding:10px 14px;margin-top:6px;';
+    card.appendChild(statusBox);
+  }
+
+  const toggle = el('button','toggle-link','▸ 內部備用視圖：本次填答資料（供交接 Dify 使用，正式上線前請移除或加上權限保護）');
+  card.appendChild(toggle);
+
+  const panel = el('div','internal-panel');
+  panel.style.display = 'none';
+  panel.appendChild(el('h3','此區塊僅供內部作業示範'));
+  panel.appendChild(el('div','warn','用途：此處提供「結構化 JSON」與「純文字摘要」兩種格式，方便直接複製貼上使用；若上方已顯示「已自動傳送至 Dify」，代表此份資料也已經送進工作流程，這裡主要作為備份與人工核對。若要啟用／調整自動傳送設定，請見程式碼中的 DIFY_API_BASE／DIFY_API_KEY 常數。'));
+
+  const payload = buildPayload();
+  const jsonStr = JSON.stringify(payload, null, 2);
+  const textStr = buildTextSummary(payload);
+
+  panel.appendChild(el('div',null,'<strong style="font-size:13.5px;">JSON（建議用於 Dify 工作流的結構化輸入）</strong>'));
+  const pre1 = el('pre', null, escapeHtml(jsonStr));
+  panel.appendChild(pre1);
+  const copyRow1 = el('div','copy-row');
+  const copyBtn1 = el('button','copy-btn','複製 JSON');
+  const copied1 = el('span','copied',''); copied1.style.display='none';
+  copyBtn1.onclick = ()=>{ navigator.clipboard.writeText(jsonStr); copied1.textContent='已複製'; copied1.style.display='inline'; setTimeout(()=>copied1.style.display='none',1800); };
+  copyRow1.appendChild(copyBtn1); copyRow1.appendChild(copied1);
+  panel.appendChild(copyRow1);
+
+  const label2 = el('div',null,'<strong style="font-size:13.5px;">純文字摘要（適合直接貼進 Dify 對話框或 Notion）</strong>');
+  label2.style.marginTop = '18px';
+  panel.appendChild(label2);
+  const summaryBox = el('div','summary-text', escapeHtml(textStr).replace(/\n/g,'<br>'));
+  panel.appendChild(summaryBox);
+  const copyRow2 = el('div','copy-row');
+  const copyBtn2 = el('button','copy-btn','複製純文字摘要');
+  const copied2 = el('span','copied',''); copied2.style.display='none';
+  copyBtn2.onclick = ()=>{ navigator.clipboard.writeText(textStr); copied2.textContent='已複製'; copied2.style.display='inline'; setTimeout(()=>copied2.style.display='none',1800); };
+  copyRow2.appendChild(copyBtn2); copyRow2.appendChild(copied2);
+  panel.appendChild(copyRow2);
+
+  card.appendChild(panel);
+  toggle.onclick = ()=>{
+    const showing = panel.style.display !== 'none';
+    panel.style.display = showing ? 'none' : 'block';
+    toggle.textContent = (showing ? '▸' : '▾') + ' 內部備用視圖：本次填答資料（供交接 Dify 使用，正式上線前請移除或加上權限保護）';
+  };
+
+  const restart = el('button','cta secondary','重新填寫（測試用）');
+  restart.style.marginTop = '20px';
+  restart.onclick = ()=>{ state.step=0; state.answers={}; state.basic={}; state.submittedAt=null; state.difyResult=null; state.currentNeed={primaryCategory:'',detail:''}; render(); };
+  card.appendChild(restart);
+
+  container.appendChild(card);
+}
+
+function escapeHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* =========================================================
+   5. 主渲染函式
+   ========================================================= */
+function render(){
+  const container = document.getElementById('stepContainer');
+  container.innerHTML = '';
+  const progressFill = document.getElementById('progressFill');
+  const stepLabel = document.getElementById('stepLabel');
+
+  if(state.step === 0){
+    progressFill.style.width = '0%';
+    stepLabel.textContent = '開始之前';
+    renderIntro(container);
+  } else if(state.step === 1){
+    progressFill.style.width = Math.round((1/TOTAL_STEPS)*100) + '%';
+    stepLabel.textContent = '第 1／' + TOTAL_STEPS + ' 步：基本資料';
+    renderBasic(container);
+  } else if(state.step >= 2 && state.step < 2+MODULES.length){
+    const idx = state.step - 2;
+    progressFill.style.width = Math.round(((state.step)/TOTAL_STEPS)*100) + '%';
+    stepLabel.textContent = '第 ' + (state.step) + '／' + TOTAL_STEPS + ' 步：' + MODULES[idx].code + ' ' + MODULES[idx].title;
+    renderModule(container, idx);
+  } else {
+    progressFill.style.width = '100%';
+    stepLabel.textContent = '完成';
+    renderThankYou(container);
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+render();
+</script>
+</body>
+</html>
